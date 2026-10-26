@@ -1,0 +1,59 @@
+[2026-10-26 19:53:39,945][hydra.core.utils][ERROR] - Job failed
+Traceback (most recent call last):
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/sklearn/__init__.py", line 709, in _save_model
+    skops.io.load(output_path, trusted=skops_trusted_types)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/skops/io/_persist.py", line 152, in load
+    audit_tree(tree, trusted=trusted)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/skops/io/_audit.py", line 63, in audit_tree
+    raise UntrustedTypesFoundException(unsafe)
+skops.io.exceptions.UntrustedTypesFoundException: Untrusted types found in the file: ['sklearn.tree._tree.Tree'].
+
+- sklearn.tree._tree.Tree: sklearn.tree._tree.Tree (the shared node storage for DecisionTree*, RandomForest*, ExtraTrees*, and GradientBoosting* models) stores raw node indices (left_child, right_child, feature) that scikit-learn indexes into without bounds checking. A malicious file can set these to out-of-range values: skops loads the object successfully, but calling .predict() on it can then crash the process (segfault) or read out-of-bounds memory. If you created the file yourself or otherwise fully trust its source, you can load it with trusted=["sklearn.tree._tree.Tree"].
+
+Only add the specific types you have reviewed and trust to the `trusted` argument; avoid passing everything reported by get_untrusted_types() just to make a file load.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/hydra/core/utils.py", line 223, in _run_job
+    ret.return_value = task_function(task_cfg)
+                       ~~~~~~~~~~~~~^^^^^^^^^^
+  File "/workspaces/mlops_poc_pipeline/train.py", line 50, in main
+    mlflow.sklearn.log_model(model, "model")
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/sklearn/__init__.py", line 497, in log_model
+    return Model.log(
+           ~~~~~~~~~^
+        artifact_path=artifact_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<21 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/telemetry/track.py", line 30, in wrapper
+    result = func(*args, **kwargs)
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/models/model.py", line 1228, in log
+    flavor.save_model(path=local_path, mlflow_model=mlflow_model, **kwargs)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/sklearn/__init__.py", line 315, in save_model
+    _save_model(
+    ~~~~~~~~~~~^
+        sk_model=sk_model,
+        ^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        skops_trusted_types=skops_trusted_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/codespace/.python/current/lib/python3.14/site-packages/mlflow/sklearn/__init__.py", line 712, in _save_model
+    raise MlflowException(
+    ...<5 lines>...
+    )
+mlflow.exceptions.MlflowException: The saved sklearn model references untrusted types. If you are sure loading these types is safe, set the 'skops_trusted_types' parameter when calling 'log_model' or 'save_model' to the list of trusted types. Root error: Untrusted types found in the file: ['sklearn.tree._tree.Tree'].
+
+- sklearn.tree._tree.Tree: sklearn.tree._tree.Tree (the shared node storage for DecisionTree*, RandomForest*, ExtraTrees*, and GradientBoosting* models) stores raw node indices (left_child, right_child, feature) that scikit-learn indexes into without bounds checking. A malicious file can set these to out-of-range values: skops loads the object successfully, but calling .predict() on it can then crash the process (segfault) or read out-of-bounds memory. If you created the file yourself or otherwise fully trust its source, you can load it with trusted=["sklearn.tree._tree.Tree"].
+
+Only add the specific types you have reviewed and trust to the `trusted` argument; avoid passing everything reported by get_untrusted_types() just to make a file load.
